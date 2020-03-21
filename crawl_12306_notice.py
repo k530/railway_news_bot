@@ -121,14 +121,16 @@ def check_12306_notice_update(first):
         return {'status': 0, 'data': []}
 
     old_article_list = load_history_file('12306.txt')
-    # print(old_article_list)
     diff = []
     for article in article_list:
         if article.get('url', '') == '':
             continue
         if article['url'] not in old_article_list:
             diff.append(article)
-    # print(diff)
+    if diff:
+        print('Old List: ', old_article_list)
+        print('Diff: ', diff)
+        write_history_file('12306.txt', article_list, 'url')
 
     message_list = []
     for article in diff:
@@ -138,5 +140,4 @@ def check_12306_notice_update(first):
             continue
         message_list.append({'title': article_data.get('title', ''), 'content': article_data.get('content', ''),
                              'url': article['url']})
-    write_history_file('12306.txt', article_list, 'url')
     return {'status': 0, 'data': message_list}

@@ -2,9 +2,10 @@
 #coding:utf-8
 
 import telegram
-from log_err import *
 import configparser
 import json
+from datetime import datetime
+from log_err import *
 import crawl_12306_notice
 import crawl_weibo
 
@@ -44,9 +45,9 @@ def send_message(bot, chat_id, message_list, max_message_length=-1):
 
 def run_task(bot, task_list):
     for task in task_list:
-        print(task)
+        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), task)
         try:
-            result = eval(task.get('evil', 'pass'))
+            result = eval(task.get('eval', 'pass'))
             # print(result)
             if result.get('status') != 0:
                 continue
