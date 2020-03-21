@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-#coding:utf-8
+# coding:utf-8
 
 import telegram
 import configparser
 import json
 from datetime import datetime
 from log_err import *
+from div_text import *
 import crawl_12306_notice
 import crawl_weibo
+DEFAULT_MESSAGE_LENGTH = 4000
 
 
 def generate_message(message, max_message_length=-1):
@@ -17,13 +19,8 @@ def generate_message(message, max_message_length=-1):
         text = ''
     text += message.get('content', '')
     if max_message_length == -1:
-        message_num = (len(text)//500)+int((len(text)%500) is not 0)
-        text_list = []
-        for i in range(0, message_num):
-            if text[i*500: (i+1)*500] != '':
-                text_list.append(text[i*500: (i+1)*500])
-        text_list[-1] += '\n(Via: ' + message['url'] + ')'
-        return text_list
+        text += '\n(Via: ' + message['url'] + ')'
+        return div_text_by_marks(text, DEFAULT_MESSAGE_LENGTH, ['，', '。', '；', ',', ';', '\n'])
     if len(text) > max_message_length:
         text = text[0:max_message_length] + '......'
     if message.get('url', '') != '':
@@ -64,7 +61,7 @@ def run_task(bot, task_list):
             log_err({'err_module': task, 'err_info': str(e), 'err_content': ''})
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     conf = configparser.ConfigParser()
     conf.read('bot.conf')
     TOKEN = conf.get("bot", "TOKEN")
