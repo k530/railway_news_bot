@@ -20,8 +20,8 @@ def generate_message(message, max_message_length=-1):
         message_num = (len(text)//500)+int((len(text)%500) is not 0)
         text_list = []
         for i in range(0, message_num):
-            if text[i: (i+1)*500] != '':
-                text_list.append(text[i: (i+1)*500])
+            if text[i*500: (i+1)*500] != '':
+                text_list.append(text[i*500: (i+1)*500])
         text_list[-1] += '\n(Via: ' + message['url'] + ')'
         return text_list
     if len(text) > max_message_length:
@@ -38,7 +38,11 @@ def send_message(bot, chat_id, message_list, max_message_length=-1):
             for text in text_list:
                 print(chat_id)
                 print(text)
-                bot.sendMessage(chat_id=chat_id, text=text, parse_mode='html')
+                try:
+                    bot.sendMessage(chat_id=chat_id, text=text, parse_mode='html')
+                except Exception as e:
+                    log_err({'err_module': 'send_message', 'err_info': str(e), 'err_content': text})
+                    log_err({'err_module': 'send_message', 'err_info': str(e), 'err_content': str(message)})
         except Exception as e:
             log_err({'err_module': 'send_message', 'err_info': str(e), 'err_content': str(message)})
 
