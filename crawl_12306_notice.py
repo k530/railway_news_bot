@@ -41,9 +41,11 @@ def query_notice_content(url):
     }
     # print(url)
     retry = 3
+    text = ''
     while retry > 0:
         try:
             req = requests.get(url, headers=headers, verify=False)
+            text = req.text
             time.sleep(2)
             soup = BeautifulSoup(req.content, 'html.parser')
             content_box = soup.find('div', class_='article-box')
@@ -55,8 +57,8 @@ def query_notice_content(url):
             retry = retry - 1
             if retry == 0:
                 log_err({'err_module': 'query_12306_notice_content', 'err_info': str(e),
-                         'err_content': 'URL:' + url + ' content:' + req.text})
-                return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + req.text}
+                         'err_content': 'URL:' + url + ' content:' + text})
+                return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + text}
 
 
 def query_notice_list(url):
@@ -80,9 +82,11 @@ def query_notice_list(url):
     # print(url)
     article_list = []
     retry = 3
+    text = ''
     while retry > 0:
         try:
             req = requests.get(url, headers=headers, verify=False)
+            text = req.text
             time.sleep(2)
             soup = BeautifulSoup(req.content, 'html.parser')
             article_list = soup.find('div', id='newList').ul.find_all('a')
@@ -91,8 +95,8 @@ def query_notice_list(url):
             retry = retry - 1
             if retry == 0:
                 log_err({'err_module': 'query_12306_notice_list', 'err_info': str(e),
-                         'err_content': 'URL:' + url + ' content:' + req.text})
-                return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + req.text}
+                         'err_content': 'URL:' + url + ' content:' + text})
+                return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + text}
     try:
         result = []
         for article in article_list:
@@ -100,8 +104,8 @@ def query_notice_list(url):
         return {'status': 0, 'data': result}
     except Exception as e:
         log_err({'err_module': 'query_12306_notice_list', 'err_info': str(e),
-                 'err_content': 'URL:' + url + ' content:' + req.text})
-        return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + req.text}
+                 'err_content': 'URL:' + url + ' content:' + text})
+        return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' + url + ' content:' + text}
 
 
 def check_12306_notice_update(first):
@@ -130,7 +134,6 @@ def check_12306_notice_update(first):
     if diff:
         print('Old List: ', old_article_list)
         print('Diff: ', diff)
-        write_history_file('12306.txt', article_list, 'url')
 
     message_list = []
     for article in diff:
@@ -140,4 +143,6 @@ def check_12306_notice_update(first):
             continue
         message_list.append({'title': article_data.get('title', ''), 'content': article_data.get('content', ''),
                              'url': article['url']})
+    if diff:
+        write_history_file('12306.txt', article_list, 'url')
     return {'status': 0, 'data': message_list}

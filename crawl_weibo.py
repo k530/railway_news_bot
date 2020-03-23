@@ -11,6 +11,7 @@ requests.packages.urllib3.disable_warnings()
 
 def query_weibo_content(weibo_id):
     retry = 3
+    text = ''
     while retry > 0:
         try:
             headers = {
@@ -27,6 +28,7 @@ def query_weibo_content(weibo_id):
                               'Chrome/80.0.3987.132 Safari/537.36'
             }
             req = requests.get('https://m.weibo.cn/statuses/extend?id=' + str(weibo_id), headers=headers, verify=False)
+            text = req.text
             time.sleep(2)
             weibo_content = json.loads(req.content).get('data', {}).get('longTextContent')
             # weibo_content = re.sub(r'<.*?>.*?<.*?>', '', weibo_content)
@@ -46,9 +48,9 @@ def query_weibo_content(weibo_id):
             if retry == 0:
                 log_err({'err_module': 'query_notice_content', 'err_info': str(e),
                          'err_content': 'URL:' + 'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) +
-                                        ' content:' + req.text})
+                                        ' content:' + text})
                 return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' +
-                        'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) + ' content:' + req.text}
+                        'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) + ' content:' + text}
 
 
 def query_weibo_list(suffix):
@@ -70,9 +72,11 @@ def query_weibo_list(suffix):
     url = 'https://m.weibo.cn/api/container/getIndex?' + suffix
     # print(url)
     retry = 3
+    text = ''
     while retry > 0:
         try:
             req = requests.get(url, headers=headers, verify=False)
+            text = req.text
             time.sleep(2)
             weibo_list = json.loads(req.content)
             # print(weibo_list)
@@ -86,9 +90,9 @@ def query_weibo_list(suffix):
             retry = retry - 1
             if retry == 0:
                 log_err({'err_module': 'query_weibo_list', 'err_info': str(e),
-                         'err_content': 'URL:' + url + ' content:' + req.text})
+                         'err_content': 'URL:' + url + ' content:' + text})
                 return {'status': -1, 'err_info': str(e),
-                        'err_content': 'URL:' + url + ' content:' + req.text}
+                        'err_content': 'URL:' + url + ' content:' + text}
     try:
         weibo_id_list = []
         for card in weibo_list['data']['cards']:
@@ -122,12 +126,14 @@ def query_weibo_list(suffix):
         return {'status': 0, 'data': weibo_id_list, 'since': next_since_id}
     except Exception as e:
         log_err({'err_module': 'query_weibo_list', 'err_info': str(e),
-                 'err_content': 'URL:' + url + ' content:' + req.text})
+                 'err_content': 'URL:' + url + ' content:' + text})
         return {'status': -1, 'err_info': str(e),
-                'err_content': 'URL:' + url + ' content:' + req.text}
+                'err_content': 'URL:' + url + ' content:' + text}
 
 
-def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, select_reg={}):
+def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, select_reg=None):
+    if select_reg is None:
+        select_reg = {}
     weibo_list = []
     current_result = query_weibo_list(suffix)
     if current_result['status'] != 0:
@@ -164,7 +170,6 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
     if diff:
         print('Old List: ', old_weibo_list)
         print('Diff: ', diff)
-        write_history_file('weibo_' + str(user_name) + '.txt', weibo_list, 'hash')
 
     message_list = []
     for article in diff:
@@ -178,4 +183,6 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
             continue
         message_list.append({'title': user_name + '：' + article_data.get('title', ''),
                              'content': article_data.get('content', ''), 'url': article.get('url', '')})
+    if diff:
+        write_history_file('weibo_' + str(user_name) + '.txt', weibo_list, 'hash')
     return {'status': 0, 'data': message_list}
