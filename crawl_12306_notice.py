@@ -121,7 +121,10 @@ def check_12306_notice_update(first):
         article_list += current_result['data']
     # print(article_list)
     if first:
-        write_history_file('12306.txt', article_list, 'url')
+        new_article_list = {}
+        for article in article_list:
+            new_article_list[article['url']] = datetime.now()
+        write_history_file('12306.txt', new_article_list)
         return {'status': 0, 'data': []}
 
     old_article_list = load_history_file('12306.txt')
@@ -139,10 +142,10 @@ def check_12306_notice_update(first):
     for article in diff:
         article_data = query_notice_content(article['url'])
         if article_data['status'] != 0:
-            article_list.remove(article)
             continue
+        old_article_list[article['url']] = datetime.now()
         message_list.append({'title': article_data.get('title', ''), 'content': article_data.get('content', ''),
                              'url': article['url']})
     if diff:
-        write_history_file('12306.txt', article_list, 'url')
+        write_history_file('12306.txt', old_article_list)
     return {'status': 0, 'data': message_list}

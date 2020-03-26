@@ -157,7 +157,10 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
             weibo_list += current_result['data']
     # print(weibo_list)
     if first:
-        write_history_file('weibo_' + str(user_name) + '.txt', weibo_list, 'hash')
+        new_weibo_list = {}
+        for weibo in weibo_list:
+            new_weibo_list[weibo['hash']] = datetime.now()
+        write_history_file('weibo_' + str(user_name) + '.txt', new_weibo_list)
         return {'status': 0, 'data': []}
 
     old_weibo_list = load_history_file('weibo_' + str(user_name) + '.txt')
@@ -175,14 +178,14 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
     for article in diff:
         article_data = query_weibo_content(article['id'])
         if article_data['status'] != 0:
-            weibo_list.remove(article)
             continue
         if ('title' in select_reg) and (re.match(select_reg['title'], article_data.get('title', '')) is None):
             continue
         if ('content' in select_reg) and (re.match(select_reg['content'], article_data.get('content', '')) is None):
             continue
+        old_weibo_list[article['hash']] = datetime.now()
         message_list.append({'title': user_name + '：' + article_data.get('title', ''),
                              'content': article_data.get('content', ''), 'url': article.get('url', '')})
     if diff:
-        write_history_file('weibo_' + str(user_name) + '.txt', weibo_list, 'hash')
+        write_history_file('weibo_' + str(user_name) + '.txt', old_weibo_list)
     return {'status': 0, 'data': message_list}
