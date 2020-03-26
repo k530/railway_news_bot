@@ -135,7 +135,7 @@ def check_12306_notice_update(first):
         if article['url'] not in old_article_list:
             diff.append(article)
     if diff:
-        print('Old List: ', old_article_list)
+        print('Old List: ', old_article_list.keys())
         print('Diff: ', diff)
 
     message_list = []

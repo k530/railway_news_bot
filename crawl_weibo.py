@@ -171,7 +171,7 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
         if str(weibo['hash']) not in old_weibo_list:
             diff.append(weibo)
     if diff:
-        print('Old List: ', old_weibo_list)
+        print('Old List: ', old_weibo_list.keys())
         print('Diff: ', diff)
 
     message_list = []
@@ -179,11 +179,11 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
         article_data = query_weibo_content(article['id'])
         if article_data['status'] != 0:
             continue
+        old_weibo_list[article['hash']] = datetime.now()
         if ('title' in select_reg) and (re.match(select_reg['title'], article_data.get('title', '')) is None):
             continue
         if ('content' in select_reg) and (re.match(select_reg['content'], article_data.get('content', '')) is None):
             continue
-        old_weibo_list[article['hash']] = datetime.now()
         message_list.append({'title': user_name + '：' + article_data.get('title', ''),
                              'content': article_data.get('content', ''), 'url': article.get('url', '')})
     if diff:
