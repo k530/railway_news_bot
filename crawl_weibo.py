@@ -6,6 +6,8 @@ import time
 from datetime import datetime, timedelta
 from history_file import *
 from log_err import *
+from format_weibo_datetime import *
+
 requests.packages.urllib3.disable_warnings()
 
 
@@ -50,10 +52,11 @@ def query_weibo_content(weibo_id):
                          'err_content': 'URL:' + 'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) +
                                         ' content:' + text})
                 return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' +
-                        'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) + ' content:' + text}
+                                                                         'https://m.weibo.cn/statuses/extend?id=' + str(
+                    weibo_id) + ' content:' + text}
 
 
-def query_weibo_list(suffix):
+def query_weibo_list(suffix, delta_days):
     headers = {
         'accept': 'application/json, text/plain, */*',
         'accept-encoding': 'gzip, deflate, br',
@@ -99,6 +102,11 @@ def query_weibo_list(suffix):
             if (card.get('card_type') != 9) or ('mblog' not in card) or ('scheme' not in card):
                 continue
             try:
+                is_top = int(card['mblog'].get('mblogtype', 0))
+                if is_top == 2:
+                    create_time = format_weibo_datetime(card['mblog'].get('created_at', '2000-01-01'))
+                    if datetime.now() - create_time > timedelta(days=delta_days):
+                        continue
                 scheme = re.match(r'https://m.weibo.cn/status/.*?\?mblogid', card['scheme'])
                 if scheme is not None:
                     scheme = scheme.group(0)[26:-8]
@@ -131,11 +139,11 @@ def query_weibo_list(suffix):
                 'err_content': 'URL:' + url + ' content:' + text}
 
 
-def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, select_reg=None):
+def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, delta_days, select_reg=None):
     if select_reg is None:
         select_reg = {}
     weibo_list = []
-    current_result = query_weibo_list(suffix)
+    current_result = query_weibo_list(suffix, delta_days)
     if current_result['status'] != 0:
         return {'status': -1}
     weibo_list += current_result['data']
@@ -143,7 +151,7 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
         since_id = current_result['since']
         count = 1
         while (count < page_num) and (since_id != ''):
-            current_result = query_weibo_list(suffix + '&since_id=' + str(since_id))
+            current_result = query_weibo_list(suffix + '&since_id=' + str(since_id), delta_days)
             if current_result['status'] != 0:
                 return {'status': -1}
             weibo_list += current_result['data']
@@ -151,7 +159,7 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
             count += 1
     if page_turn_type == 1:
         for page_no in range(1, page_num):
-            current_result = query_weibo_list(suffix + '&page=' + str(page_no + 1))
+            current_result = query_weibo_list(suffix + '&page=' + str(page_no + 1), delta_days)
             if current_result['status'] != 0:
                 return {'status': -1}
             weibo_list += current_result['data']
@@ -186,6 +194,6 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, selec
             continue
         message_list.append({'title': user_name + '：' + article_data.get('title', ''),
                              'content': article_data.get('content', ''), 'url': article.get('url', '')})
-    if diff:
-        write_history_file('weibo_' + str(user_name) + '.txt', old_weibo_list)
+    if diff or (len(old_weibo_list) > 10 * (page_num + 1)):
+        write_history_file('weibo_' + str(user_name) + '.txt', old_weibo_list, 10 * (page_num + 1), delta_days)
     return {'status': 0, 'data': message_list}

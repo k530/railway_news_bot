@@ -146,6 +146,6 @@ def check_12306_notice_update(first):
         old_article_list[article['url']] = datetime.now()
         message_list.append({'title': article_data.get('title', ''), 'content': article_data.get('content', ''),
                              'url': article['url']})
-    if diff:
-        write_history_file('12306.txt', old_article_list)
+    if diff or (len(old_article_list) > 60):
+        write_history_file('12306.txt', old_article_list, 60)
     return {'status': 0, 'data': message_list}

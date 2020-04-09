@@ -11,14 +11,14 @@
 		}]
 	},
 	{
-		"eval": "crawl_weibo.check_weibo_update(False, 'uid=1742987497&type=uid&value=1742987497&containerid=1076031742987497', '上海地铁shmetro', 2, 0, {'title': '.*?客流|.*?运营信息'})",
+		"eval": "crawl_weibo.check_weibo_update(False, 'uid=1742987497&type=uid&value=1742987497&containerid=1076031742987497', '上海地铁shmetro', 2, 0, 5, {'title': '.*?客流|.*?运营信息'})",
 		"chat": [{
 			"id": TELEGRAM_CHAT_ID_HERE,
 			"max_message_length": 300
 		}]
 	},
 	{
-		"eval": "crawl_weibo.check_weibo_update(False, 'uid=1917205532&type=uid&value=1917205532&containerid=1076031917205532', '铁路上海站', 2, 0, {'title': '.*?运输资讯.*?'})",
+		"eval": "crawl_weibo.check_weibo_update(False, 'uid=1917205532&type=uid&value=1917205532&containerid=1076031917205532', '铁路上海站', 2, 0, 5, {'title': '.*?运输资讯.*?'})",
 		"chat": [{
 			"id": TELEGRAM_CHAT_ID_HERE,
 			"max_message_length": 300
