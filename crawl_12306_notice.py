@@ -137,6 +137,7 @@ def check_12306_notice_update(first):
     if diff:
         print('Old List: ', old_article_list.keys())
         print('Diff: ', diff)
+        diff.reverse()
 
     message_list = []
     for article in diff:

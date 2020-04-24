@@ -181,6 +181,7 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, delta
     if diff:
         print('Old List: ', old_weibo_list.keys())
         print('Diff: ', diff)
+        diff.reverse()
 
     message_list = []
     for article in diff:
