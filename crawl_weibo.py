@@ -188,6 +188,10 @@ def check_weibo_update(first, suffix, user_name, page_num, page_turn_type, delta
         article_data = query_weibo_content(article['id'])
         if article_data['status'] != 0:
             continue
+        if '@' in article['hash']:
+            for hash_key in list(old_weibo_list.keys()):
+                if hash_key[0:len(article['id'])] == article['id']:
+                    old_weibo_list.pop(hash_key)
         old_weibo_list[article['hash']] = datetime.now()
         if ('title' in select_reg) and (re.match(select_reg['title'], article_data.get('title', '')) is None):
             continue
