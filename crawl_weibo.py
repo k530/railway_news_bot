@@ -11,6 +11,19 @@ from format_weibo_datetime import *
 requests.packages.urllib3.disable_warnings()
 
 
+def format_weibo_content(content):
+    try:
+        content = content.replace('\n', '@line@').replace('\r', '@line@')
+        content = content.replace('</div>', '@line@').replace('</p>', '@line@').replace('<br/>', '@line@')
+        content = re.sub(r'<.*?>.*?</.*?>', '', content)
+        content = re.sub(r'<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', content)
+        content = re.sub(r'[\r\n]+', '\n', content.replace('@line@', '\n'))
+    except Exception as e:
+        log_err({'err_module': 'format_weibo_content', 'err_info': str(e), 'err_content': content})
+    finally:
+        return content
+
+
 def query_weibo_content(weibo_id):
     retry = 3
     text = ''
@@ -44,7 +57,7 @@ def query_weibo_content(weibo_id):
             else:
                 title = ''
             # print({'status': 0, 'title': title, 'content': weibo_content})
-            return {'status': 0, 'title': title, 'content': weibo_content}
+            return {'status': 0, 'title': title, 'content': format_weibo_content(weibo_content)}
         except Exception as e:
             retry = retry - 1
             if retry == 0:
