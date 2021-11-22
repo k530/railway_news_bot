@@ -44,6 +44,8 @@ def query_weibo_content(weibo_id):
             }
             req = requests.get('https://m.weibo.cn/statuses/extend?id=' + str(weibo_id), headers=headers, verify=False)
             text = req.text
+            if "打开微博客户端，查看全文" in text:
+                return {'status': 0, 'title': '', 'content': ''}
             time.sleep(2)
             weibo_content = json.loads(req.content).get('data', {}).get('longTextContent')
             # weibo_content = re.sub(r'<.*?>.*?<.*?>', '', weibo_content)
@@ -61,7 +63,7 @@ def query_weibo_content(weibo_id):
         except Exception as e:
             retry = retry - 1
             if retry == 0:
-                log_err({'err_module': 'query_notice_content', 'err_info': str(e),
+                log_err({'err_module': 'query_weibo_content', 'err_info': str(e),
                          'err_content': 'URL:' + 'https://m.weibo.cn/statuses/extend?id=' + str(weibo_id) +
                                         ' content:' + text})
                 return {'status': -1, 'err_info': str(e), 'err_content': 'URL:' +
