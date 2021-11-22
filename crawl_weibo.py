@@ -134,14 +134,14 @@ def query_weibo_list(suffix, delta_days):
                     url = 'https://m.weibo.cn/detail/' + str(weibo_id)
                 if edit_time != '':
                     edit_time = datetime.strptime(edit_time, '%a %b %d %H:%M:%S +0800 %Y')
-                    weibo_id_list.append({'hash': weibo_id + '@' + edit_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    weibo_id_list.append({'hash': str(weibo_id) + '@' + edit_time.strftime('%Y-%m-%d %H:%M:%S'),
                                           'id': weibo_id, 'url': url})
                 else:
-                    weibo_id_list.append({'hash': weibo_id, 'id': weibo_id, 'url': url})
+                    weibo_id_list.append({'hash': str(weibo_id), 'id': weibo_id, 'url': url})
                 # print(weibo_id)
             except Exception as e:
                 log_err({'err_module': 'query_weibo_list', 'err_info': str(e),
-                         'err_content': card.get('mblog') + ' URL: ' + url})
+                         'err_content': str(card.get('mblog')) + ' URL: ' + url})
                 continue
         # print(weibo_id_list)
         return {'status': 0, 'data': weibo_id_list, 'since': next_since_id}

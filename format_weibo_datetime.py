@@ -34,6 +34,8 @@ def format_weibo_datetime(datestr):
             newdate = datetime.fromtimestamp(mdate) - timedelta(days=1)
         elif u"小时前" in newstr:
             newdate = now - timedelta(hours=int(newstr[:-3]))
+        elif u"+0800" in newstr:
+            newdate = datetime.strptime(newstr, "%a %b %d %H:%M:%S +0800 %Y")
         else:
             newdate = datetime.strptime(newstr, "%Y-%m-%d %H:%M")
     except Exception as e:
